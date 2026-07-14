@@ -14,7 +14,7 @@
 ###############################################################################
 set -euo pipefail
 
-REPO_URL="https://github.com/Bisht9887/DocAssist.git"
+REPO_URL="https://github.com/kumartprem/DocAssist.git"
 APP_DIR="/opt/docassist"
 BRANCH="main"
 

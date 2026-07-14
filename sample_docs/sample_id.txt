@@ -1,0 +1,11 @@
+SAMPLE GOVERNMENT ID
+====================
+
+Name:       John Doe
+ID Number:  DL-9283-4827-001
+Date of Birth: 1985-03-15
+Issue Date:    2022-01-10
+Expiry Date:   2028-01-10
+Issuing Authority: Department of Motor Vehicles
+
+This is a sample document for testing the DocAssist upload portal.

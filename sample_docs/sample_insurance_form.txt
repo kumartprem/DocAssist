@@ -1,0 +1,15 @@
+SAMPLE INSURANCE CLAIM FORM
+===========================
+
+Claimant: John Doe
+Policy Number: INS-482716
+Date of Incident: 2025-10-05
+Type of Claim: Personal Injury
+
+Description:
+Vehicle collision at intersection of Main St and 5th Ave.
+Minor injuries sustained. Police report filed (#PR-20251005-3847).
+
+Amount Claimed: $12,500.00
+
+This is a sample document for testing the DocAssist upload portal.

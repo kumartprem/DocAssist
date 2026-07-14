@@ -1,0 +1,13 @@
+SAMPLE MEDICAL RECORD
+=====================
+
+Patient: John Doe
+DOB: 1985-03-15
+Record Date: 2025-11-20
+Provider: Dr. Smith, City General Hospital
+
+Diagnosis: Minor back injury from vehicle accident on 2025-10-05.
+Treatment: Physical therapy (12 sessions), pain medication prescribed.
+Follow-up: Scheduled for 2026-02-15.
+
+This is a sample document for testing the DocAssist upload portal.

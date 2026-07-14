@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Documents — DocAssist</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .header p { opacity: 0.85; margin-top: 0.25rem; font-size: 0.95rem; }
+
+        .container {
+            max-width: 640px;
+            margin: -1.5rem auto 2rem;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .case-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .case-info h2 { font-size: 1.15rem; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: #22c55e;
+            border-radius: 99px;
+            transition: width 0.4s ease;
+        }
+        .progress-text {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.35rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .checklist-item:last-child { border-bottom: none; }
+
+        .status-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .status-icon.done { background: #dcfce7; color: #16a34a; }
+        .status-icon.pending { background: #fef3c7; color: #d97706; }
+
+        .item-info { flex: 1; }
+        .item-info .name { font-weight: 600; font-size: 0.95rem; }
+        .item-info .desc { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+        .item-info .uploaded-time { font-size: 0.75rem; color: #22c55e; margin-top: 2px; }
+
+        .upload-btn {
+            position: relative;
+            overflow: hidden;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .upload-btn:hover { background: #1d4ed8; }
+        .upload-btn.done {
+            background: #f0fdf4;
+            color: #16a34a;
+            cursor: default;
+        }
+        .upload-btn input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-btn.uploading {
+            background: #94a3b8;
+            pointer-events: none;
+        }
+
+        .all-done {
+            text-align: center;
+            padding: 2rem;
+        }
+        .all-done .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+        .all-done h3 { color: #16a34a; }
+        .all-done p { color: #64748b; font-size: 0.9rem; margin-top: 0.25rem; }
+
+        .loading { text-align: center; padding: 3rem; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Document Upload Portal</h1>
+        <p>Please upload the requested documents below</p>
+    </div>
+
+    <div class="container">
+        <div id="app">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const TOKEN = "{{ token }}";
+        const API = `/api/client/${TOKEN}`;
+
+        async function loadCase() {
+            const res = await fetch(API);
+            if (!res.ok) { document.getElementById("app").innerHTML = "<div class='card'><p>Invalid or expired link.</p></div>"; return; }
+            const data = await res.json();
+            render(data);
+        }
+
+        function render(c) {
+            const total = c.checklist_items.length;
+            const done = c.checklist_items.filter(i => i.is_received).length;
+            const pct = total ? Math.round((done / total) * 100) : 0;
+            const allDone = done === total && total > 0;
+
+            let html = `
+                <div class="card">
+                    <div class="case-info">
+                        <h2>${esc(c.title)}</h2>
+                        <span style="font-size:0.85rem;color:#64748b">${done}/${total} uploaded</span>
+                    </div>
+                    <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+                    <div class="progress-text">${pct}% complete</div>
+                </div>
+            `;
+
+            if (allDone) {
+                html += `<div class="card all-done">
+                    <div class="icon">&#10003;</div>
+                    <h3>All documents received!</h3>
+                    <p>Thank you, ${esc(c.client_name)}. Your lawyer has been notified.</p>
+                </div>`;
+            }
+
+            html += `<div class="card">`;
+            for (const item of c.checklist_items) {
+                const iconClass = item.is_received ? "done" : "pending";
+                const icon = item.is_received ? "&#10003;" : "&#8226;";
+                const btnHtml = item.is_received
+                    ? `<button class="upload-btn done">Uploaded</button>`
+                    : `<button class="upload-btn" id="btn-${item.id}">
+                        Choose File
+                        <input type="file" onchange="upload(${item.id}, this)">
+                       </button>`;
+                const uploadedTime = item.uploaded_at
+                    ? `<div class="uploaded-time">Uploaded ${new Date(item.uploaded_at).toLocaleDateString()}</div>`
+                    : "";
+                html += `
+                    <div class="checklist-item">
+                        <div class="status-icon ${iconClass}">${icon}</div>
+                        <div class="item-info">
+                            <div class="name">${esc(item.name)}</div>
+                            ${item.description ? `<div class="desc">${esc(item.description)}</div>` : ""}
+                            ${uploadedTime}
+                        </div>
+                        ${btnHtml}
+                    </div>`;
+            }
+            html += `</div>`;
+
+            document.getElementById("app").innerHTML = html;
+        }
+
+        async function upload(itemId, input) {
+            const file = input.files[0];
+            if (!file) return;
+            const btn = document.getElementById(`btn-${itemId}`);
+            btn.classList.add("uploading");
+            btn.textContent = "Uploading...";
+
+            const fd = new FormData();
+            fd.append("file", file);
+
+            const res = await fetch(`${API}/upload/${itemId}`, { method: "POST", body: fd });
+            if (res.ok) {
+                loadCase();
+            } else {
+                btn.classList.remove("uploading");
+                btn.innerHTML = 'Choose File<input type="file" onchange="upload(' + itemId + ', this)">';
+                alert("Upload failed. Please try again.");
+            }
+        }
+
+        function esc(s) {
+            const d = document.createElement("div");
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        loadCase();
+    </script>
+</body>
+</html>

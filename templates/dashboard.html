@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocAssist — Lawyer Dashboard</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .navbar .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        .navbar .subtitle { font-size: 0.8rem; color: #64748b; }
+
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .top-bar h2 { font-size: 1.25rem; }
+
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1d4ed8; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+        .btn-outline {
+            background: transparent;
+            color: #2563eb;
+            border: 1.5px solid #2563eb;
+        }
+        .btn-outline:hover { background: #eff6ff; }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 1rem;
+        }
+        .card-header h3 { font-size: 1.05rem; cursor: pointer; }
+        .card-header h3:hover { color: #2563eb; }
+
+        .meta { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background: #dcfce7; color: #16a34a; }
+        .badge-yellow { background: #fef3c7; color: #d97706; }
+
+        .progress-mini {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            margin-top: 0.75rem;
+            overflow: hidden;
+        }
+        .progress-mini .fill {
+            height: 100%;
+            background: #22c55e;
+            border-radius: 99px;
+            transition: width 0.4s ease;
+        }
+
+        .link-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .link-row input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.4rem 0.6rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #475569;
+            background: #f8fafc;
+        }
+
+        /* Modal */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 { margin-bottom: 1.25rem; font-size: 1.2rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #374151;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .checklist-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+        .checklist-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        .checklist-tag button {
+            background: none;
+            border: none;
+            color: #93a3b8;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+        }
+        .checklist-tag button:hover { color: #ef4444; }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        /* Detail view */
+        .detail-panel { display: none; }
+        .detail-panel.active { display: block; }
+        .back-link {
+            font-size: 0.9rem;
+            color: #2563eb;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item .status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .detail-item .status.done { background: #22c55e; }
+        .detail-item .status.pending { background: #f59e0b; }
+        .detail-item .info { flex: 1; }
+        .detail-item .info .name { font-weight: 600; font-size: 0.9rem; }
+        .detail-item .info .sub { font-size: 0.78rem; color: #64748b; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+        }
+        .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div>
+            <div class="brand">DocAssist</div>
+            <div class="subtitle">Document Collection Assistant</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- List View -->
+        <div id="list-view">
+            <div class="top-bar">
+                <h2>Your Cases</h2>
+                <button class="btn" onclick="openModal()">+ New Case</button>
+            </div>
+            <div id="cases-list">
+                <div class="empty-state">
+                    <div class="icon">&#128194;</div>
+                    <p>Loading cases...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail View -->
+        <div id="detail-view" class="detail-panel">
+            <span class="back-link" onclick="showList()">&larr; Back to cases</span>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- New Case Modal -->
+    <div class="overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>Create New Case</h2>
+            <div class="form-group">
+                <label>Case Title</label>
+                <input id="f-title" placeholder="e.g. Personal Injury — John Doe">
+            </div>
+            <div class="form-group">
+                <label>Client Name</label>
+                <input id="f-name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Client Email</label>
+                <input id="f-email" type="email" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label>Checklist Items</label>
+                <div style="display:flex;gap:0.5rem">
+                    <input id="f-item" placeholder="e.g. Government ID" onkeydown="if(event.key==='Enter')addItem()">
+                    <button class="btn btn-sm" onclick="addItem()">Add</button>
+                </div>
+                <div class="checklist-tags" id="f-tags"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="document.getElementById('modal-overlay').classList.remove('active')">Cancel</button>
+                <button class="btn" onclick="createCase()">Create Case</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div class="overlay" id="add-item-overlay" onclick="closeAddItem(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>Add Checklist Item</h2>
+            <div class="form-group">
+                <label>Document Name</label>
+                <input id="ai-name" placeholder="e.g. Medical Records">
+            </div>
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <input id="ai-desc" placeholder="e.g. Last 2 years of medical history">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="document.getElementById('add-item-overlay').classList.remove('active')">Cancel</button>
+                <button class="btn" onclick="submitAddItem()">Add Item</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let checklistItems = [];
+        let currentCaseId = null;
+
+        // ─── Cases List ─────────────────────────────
+
+        async function loadCases() {
+            const res = await fetch("/api/cases");
+            const cases = await res.json();
+            const el = document.getElementById("cases-list");
+
+            if (!cases.length) {
+                el.innerHTML = `<div class="empty-state">
+                    <div class="icon">&#128194;</div>
+                    <p>No cases yet. Create your first case to get started.</p>
+                </div>`;
+                return;
+            }
+
+            el.innerHTML = cases.map(c => {
+                const pct = c.total_items ? Math.round((c.received_items / c.total_items) * 100) : 0;
+                const allDone = c.received_items === c.total_items && c.total_items > 0;
+                const badgeClass = allDone ? "badge-green" : "badge-yellow";
+                const badgeText = allDone ? "Complete" : `${c.received_items}/${c.total_items}`;
+                return `<div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3 onclick="showDetail(${c.id})">${esc(c.title)}</h3>
+                            <div class="meta">${esc(c.client_name)} &middot; ${esc(c.client_email)}</div>
+                        </div>
+                        <span class="badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="progress-mini"><div class="fill" style="width:${pct}%"></div></div>
+                </div>`;
+            }).join("");
+        }
+
+        // ─── Case Detail ────────────────────────────
+
+        async function showDetail(id) {
+            currentCaseId = id;
+            const res = await fetch(`/api/cases/${id}`);
+            const c = await res.json();
+
+            const portalLink = `${location.origin}/portal/${c.access_token}`;
+            const done = c.checklist_items.filter(i => i.is_received).length;
+            const total = c.checklist_items.length;
+
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3>${esc(c.title)}</h3>
+                            <div class="meta">${esc(c.client_name)} &middot; ${esc(c.client_email)} &middot; ${done}/${total} received</div>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCase(${c.id})">Delete</button>
+                    </div>
+                    <div class="link-row">
+                        <input value="${portalLink}" readonly id="portal-link">
+                        <button class="btn btn-sm btn-outline" onclick="copyLink()">Copy Link</button>
+                    </div>
+                </div>
+                <div class="top-bar" style="margin-top:0.5rem">
+                    <h2 style="font-size:1rem">Checklist</h2>
+                    <button class="btn btn-sm" onclick="openAddItem()">+ Add Item</button>
+                </div>
+                <div class="card">`;
+
+            if (!c.checklist_items.length) {
+                html += `<div class="empty-state" style="padding:1.5rem"><p>No checklist items yet.</p></div>`;
+            } else {
+                for (const item of c.checklist_items) {
+                    const statusClass = item.is_received ? "done" : "pending";
+                    const statusText = item.is_received
+                        ? `Received ${new Date(item.uploaded_at).toLocaleDateString()}`
+                        : "Awaiting upload";
+                    html += `<div class="detail-item">
+                        <div class="status ${statusClass}"></div>
+                        <div class="info">
+                            <div class="name">${esc(item.name)}</div>
+                            <div class="sub">${statusText}</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline" style="color:#ef4444;border-color:#ef4444" onclick="deleteItem(${item.id})">Remove</button>
+                    </div>`;
+                }
+            }
+            html += `</div>`;
+
+            document.getElementById("detail-content").innerHTML = html;
+            document.getElementById("list-view").style.display = "none";
+            document.getElementById("detail-view").classList.add("active");
+        }
+
+        function showList() {
+            document.getElementById("detail-view").classList.remove("active");
+            document.getElementById("list-view").style.display = "block";
+            loadCases();
+        }
+
+        function copyLink() {
+            const input = document.getElementById("portal-link");
+            input.select();
+            navigator.clipboard.writeText(input.value);
+        }
+
+        // ─── Create Case ────────────────────────────
+
+        function openModal() {
+            checklistItems = [];
+            document.getElementById("f-title").value = "";
+            document.getElementById("f-name").value = "";
+            document.getElementById("f-email").value = "";
+            document.getElementById("f-item").value = "";
+            renderTags();
+            document.getElementById("modal-overlay").classList.add("active");
+        }
+
+        function closeModal(e) {
+            if (e.target === document.getElementById("modal-overlay"))
+                document.getElementById("modal-overlay").classList.remove("active");
+        }
+
+        function addItem() {
+            const input = document.getElementById("f-item");
+            const val = input.value.trim();
+            if (!val) return;
+            checklistItems.push(val);
+            input.value = "";
+            renderTags();
+        }
+
+        function removeItem(idx) {
+            checklistItems.splice(idx, 1);
+            renderTags();
+        }
+
+        function renderTags() {
+            document.getElementById("f-tags").innerHTML = checklistItems.map((t, i) =>
+                `<span class="checklist-tag">${esc(t)} <button onclick="removeItem(${i})">&times;</button></span>`
+            ).join("");
+        }
+
+        async function createCase() {
+            const title = document.getElementById("f-title").value.trim();
+            const name = document.getElementById("f-name").value.trim();
+            const email = document.getElementById("f-email").value.trim();
+            if (!title || !name || !email) { alert("Please fill in all fields."); return; }
+
+            await fetch("/api/cases", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title, client_name: name, client_email: email,
+                    checklist_items: checklistItems
+                })
+            });
+            document.getElementById("modal-overlay").classList.remove("active");
+            loadCases();
+        }
+
+        // ─── Add/Delete Items ───────────────────────
+
+        function openAddItem() {
+            document.getElementById("ai-name").value = "";
+            document.getElementById("ai-desc").value = "";
+            document.getElementById("add-item-overlay").classList.add("active");
+        }
+        function closeAddItem(e) {
+            if (e.target === document.getElementById("add-item-overlay"))
+                document.getElementById("add-item-overlay").classList.remove("active");
+        }
+        async function submitAddItem() {
+            const name = document.getElementById("ai-name").value.trim();
+            if (!name) return;
+            await fetch(`/api/cases/${currentCaseId}/checklist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, description: document.getElementById("ai-desc").value.trim() || null })
+            });
+            document.getElementById("add-item-overlay").classList.remove("active");
+            showDetail(currentCaseId);
+        }
+        async function deleteItem(id) {
+            if (!confirm("Remove this checklist item?")) return;
+            await fetch(`/api/checklist/${id}`, { method: "DELETE" });
+            showDetail(currentCaseId);
+        }
+        async function deleteCase(id) {
+            if (!confirm("Delete this case and all its documents?")) return;
+            await fetch(`/api/cases/${id}`, { method: "DELETE" });
+            showList();
+        }
+
+        // ─── Helpers ────────────────────────────────
+
+        function esc(s) {
+            const d = document.createElement("div");
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        loadCases();
+    </script>
+</body>
+</html>

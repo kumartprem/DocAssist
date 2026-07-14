@@ -46,6 +46,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/docassist
+EnvironmentFile=-/etc/docassist.env
 ExecStart=/opt/docassist/venv/bin/uvicorn main:app --host 0.0.0.0 --port 80
 Restart=always
 RestartSec=3

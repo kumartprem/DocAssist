@@ -18,8 +18,9 @@ uvicorn main:app --reload
 
 ### 3. Open in browser
 
-- **Lawyer Dashboard:** http://localhost:8000
-- **API Docs:** http://localhost:8000/docs
+- **Lawyer Dashboard:** http://34.73.138.81/
+- **API Docs:** http://34.73.138.81/docs
+- **FastAPI Docs:** http://34.73.138.81/redoc
 
 ## How It Works
 

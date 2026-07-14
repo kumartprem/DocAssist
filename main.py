@@ -12,10 +12,11 @@ from database import Base, engine, get_db
 from models import Case, ChecklistItem
 from schemas import CaseCreate, CaseOut, CaseSummary, ChecklistItemCreate, ChecklistItemOut
 
+import asyncio
+from storage_backend import save_upload
+
 Base.metadata.create_all(bind=engine)
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="DocAssist — Document Collection Assistant")
 
@@ -127,16 +128,19 @@ async def upload_document(
     if not item:
         raise HTTPException(404, "Checklist item not found")
 
-    case_dir = UPLOAD_DIR / str(case.id)
-    case_dir.mkdir(exist_ok=True)
-
-    safe_name = f"{item_id}_{file.filename}"
-    file_path = case_dir / safe_name
     content = await file.read()
-    file_path.write_bytes(content)
-
+    
+    storage_path = await asyncio.to_thread(
+        save_upload,
+        case.id,
+        item_id,
+        file.filename or "upload.bin",
+        content,
+        file.content_type,
+    )
+    
     item.is_received = True
-    item.uploaded_file_path = str(file_path)
+    item.uploaded_file_path = storage_path
     item.uploaded_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(item)

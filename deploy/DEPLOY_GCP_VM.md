@@ -14,7 +14,7 @@ Python, clones this repo from GitHub, installs dependencies, and starts the app 
 
 1. A **Google account** and a **GCP project with billing enabled**
    (https://console.cloud.google.com — create a project, then link a billing account).
-2. This repository pushed to GitHub (already done: `github.com/Bisht9887/DocAssist`).
+2. This repository pushed to GitHub (already done: `github.com/kumartprem/DocAssist`).
    Make sure the latest commit — including the `deploy/` folder — is pushed.
 
 You do **not** need to install anything locally: use **Google Cloud Shell** (a browser
@@ -30,7 +30,7 @@ terminal with `gcloud` pre-installed and already authenticated).
    startup script):
 
 ```bash
-git clone https://github.com/Bisht9887/DocAssist.git
+git clone https://github.com/kumartprem/DocAssist.git
 cd DocAssist
 ```
 

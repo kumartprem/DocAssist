@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+venv/
+.venv/
+
+# Database (runtime data)
+*.db
+docassist.db
+
+# Uploaded files (runtime data)
+uploads/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude Code local config
+.claude/
